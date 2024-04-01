@@ -27,20 +27,42 @@ app.get("/api/hello", function (req, res) {
 });
 
 
-app.get("/api/:time", (req, res) => {
-  let unixDate = req.params.time;
-  let utcDate = new Date(req.params.time);
+app.get("/api/:date?", (req, res) => {
+  let result;
+  let unixDate = req.params.date;
+  let utcDate = new Date(req.params.date);
 
-  if (utcDate.toString() != "Invalid Date") {
-    unixDate = Math.floor( utcDate.getTime() );
+  // CHECK IF req.params.date IS EMPTY OR UNDEFINED
+  // In that case it returns the current day
+  if (!req.params.date) {
+    const today = new Date();
+
+    result = {
+      unix: today.getTime(),
+      utc: today.toUTCString()
+    }
   } else {
-    utcDate = new Date(moment(unixDate * 1).toDate());
+    // CHECK IF req.params.date IS A VALID DATE FORMAT
+    if (moment(parseInt(req.params.date)).isValid()){
+      // CHECK IF utcDate IS A VALID DATE IN A FORMAT LIKE YYYY-MM-DD
+      // In the ELSE case is because is a unix value
+      if (utcDate.toString() != "Invalid Date") {
+        unixDate = Math.floor( utcDate.getTime() );
+      } else {
+        utcDate = new Date(moment(unixDate * 1).toDate());
+      }
+
+      result = { 
+        unix: parseInt(unixDate), 
+        utc: utcDate.toUTCString() 
+      }
+    } else {
+      result = { error: "Invalid Date" }
+    }
   }
 
-  res.json({ 
-    unix: parseInt(unixDate), 
-    utc: utcDate.toUTCString() 
-  })
+  // RETURN THE RESULT
+  res.json(result)
 })
 
 
@@ -49,3 +71,10 @@ app.get("/api/:time", (req, res) => {
 var listener = app.listen(process.env.PORT || 3000, function () {
   console.log('Your app is listening on port ' + listener.address().port);
 });
+
+
+
+
+// 1st. {"unix":1451001600000,"utc":"Fri, 25 Dec 2015 00:00:00 GMT"}
+// 2nd. {"unix":1451001600000,"utc":"Fri, 25 Dec 2015 00:00:00 GMT"}
+// 3rd. 
