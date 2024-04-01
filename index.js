@@ -5,6 +5,8 @@
 var express = require('express');
 var app = express();
 
+const moment = require('moment');
+
 // enable CORS (https://en.wikipedia.org/wiki/Cross-origin_resource_sharing)
 // so that your API is remotely testable by FCC 
 var cors = require('cors');
@@ -23,6 +25,23 @@ app.get("/", function (req, res) {
 app.get("/api/hello", function (req, res) {
   res.json({greeting: 'hello API'});
 });
+
+
+app.get("/api/:time", (req, res) => {
+  let unixDate = req.params.time;
+  let utcDate = new Date(req.params.time);
+
+  if (utcDate.toString() != "Invalid Date") {
+    unixDate = Math.floor( utcDate.getTime() );
+  } else {
+    utcDate = new Date(moment(unixDate * 1).toDate());
+  }
+
+  res.json({ 
+    unix: parseInt(unixDate), 
+    utc: utcDate.toUTCString() 
+  })
+})
 
 
 
